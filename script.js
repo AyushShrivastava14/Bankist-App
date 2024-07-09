@@ -108,7 +108,7 @@ const inputClosePin = document.querySelector('.form__input--pin');
 
 
 
-let currentAccount;
+let currentAccount, timer;
 
 const updateUI = acc => {
   // Display Movements
@@ -121,7 +121,37 @@ const updateUI = acc => {
   calcDisplaySummary(acc);
 };
 
+const startLogOutTimer = function() {
+  const tick = function() {
+    // Minutes and Seconds
+    const mins = String(Math.trunc(time / 60)).padStart(2, 0);
+    const secs = String(Math.trunc(time % 60)).padStart(2, 0);
 
+    // Set the UI
+    labelTimer.textContent = `${mins}:${secs}`;
+
+    // Logout the user if timer reaches 0 Seconds
+    if(time == 0) {
+      // Clear Interval
+      clearInterval(timer);
+
+      // Welcome label change to default
+      labelWelcome.textContent = 'Log in to get started';
+
+      containerApp.style.opacity = 0;
+    }
+
+    // Decrease the time
+    time--;
+  }
+
+  // Time
+  let time = 600;
+
+  const timer = setInterval(tick, 1000);
+
+  return timer;
+}
 
 const formatMovementDate = (date, locale) => {
   const calcDaysPassed = (date1, date2) =>Math.round(Math.abs(date2 - date1) / (1000 * 60 * 60 * 24));
@@ -151,7 +181,7 @@ const formatCur = function(value, locale, currency) {
 };
 
 
-
+// Function to display movements/transactions
 const displayMovements = function(accs, sort = false) {
   containerMovements.innerHTML = '';
   
@@ -176,14 +206,14 @@ const displayMovements = function(accs, sort = false) {
 };
 
 
-
+// Function to display total balance
 const calcDisplayBalance = function(accs) {
   accs.balance = accs.movements.reduce((acc, mov) => acc + mov, 0);
   labelBalance.textContent = `${formatCur(accs.balance, accs.locale, accs.currency)}`;
 };
 
 
-
+// Function to display summary
 const calcDisplaySummary = (accs) => {
   const income = accs.movements.filter(mov => mov > 0).reduce((acc, mov) => acc + mov, 0);
   labelSumIn.textContent = `${formatCur(income, accs.locale, accs.currency)}`;
@@ -200,16 +230,15 @@ const calcDisplaySummary = (accs) => {
 }
 
 
-
+// Creating Usernames
 const createUsernames = function(accs) {
-  accs.forEach(acc =>  acc.username = acc.owner
-    .toLowerCase().split(' ').map(Name => Name[0]).join(''));
-  }
-  createUsernames(accounts);
+accs.forEach(acc =>  acc.username = acc.owner
+  .toLowerCase().split(' ').map(Name => Name[0]).join(''));
+}
+createUsernames(accounts);
   
   
-  
-  
+// LOGIN button
 btnLogin.addEventListener('click', function(event) {
   event.preventDefault();
   
@@ -245,6 +274,10 @@ btnLogin.addEventListener('click', function(event) {
     
     // Display UI
     containerApp.style.opacity = 100;
+
+    // Timer
+    if(timer) clearInterval(timer);
+    timer = startLogOutTimer();
     
     // Update UI
     updateUI(currentAccount);
@@ -252,7 +285,7 @@ btnLogin.addEventListener('click', function(event) {
 });
   
   
-  
+// SORT button
 let sorted = false;
 btnSort.addEventListener('click', function(event) {
   event.preventDefault();
@@ -262,7 +295,7 @@ btnSort.addEventListener('click', function(event) {
 });
 
 
-
+// TRANSFER button
 btnTransfer.addEventListener('click', function(event) {
     event.preventDefault();
     
@@ -288,7 +321,7 @@ btnTransfer.addEventListener('click', function(event) {
 });
   
   
-  
+// LOAN button  
 btnLoan.addEventListener('click', function(event) {
     event.preventDefault();
     
@@ -311,8 +344,8 @@ btnLoan.addEventListener('click', function(event) {
     inputLoanAmount.blur();
 });
   
-  
-  
+
+// CLOSE button
 btnClose.addEventListener('click', function(event) {
     event.preventDefault();
     
@@ -332,12 +365,3 @@ btnClose.addEventListener('click', function(event) {
   // Welcome label change to default
   labelWelcome.textContent = 'Log in to get started';
 });
-
-
-
-// Fake login (delete it after use)
-// currentAccount = account1;
-// updateUI(currentAccount);
-// containerApp.style.opacity = 100;
-
-
